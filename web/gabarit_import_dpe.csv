@@ -1,0 +1,6 @@
+surface,pieces,age,occupants,annual_consumption,heating_type,insulation
+85.0,4,25,3,12000.0,Gaz,Moyenne
+45.0,2,10,1,4500.0,Electrique,Bonne
+150.0,6,80,5,28000.0,Fioul,Mauvaise
+120.0,5,3,4,4800.0,Pompe_a_chaleur,Excellente
+75.0,3,45,2,8500.0,Bois,Moyenne

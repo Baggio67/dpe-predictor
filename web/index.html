@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPE Predictor - Plateforme Industrielle de Diagnostic Énergétique</title>
+    
+    <!-- Meta tags SEO -->
+    <meta name="description" content="Plateforme industrielle de prédiction de la classe énergétique (DPE) et de simulation de rénovation énergétique à l'échelle de parcs immobiliers.">
+    <meta name="author" content="Antigravity AI">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX for beautiful math equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.js"></script>
+    
+    <!-- Chart.js for interactive probability distribution -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-leaf logo-icon"></i>
+                <h1>DPE<span>Predictor</span></h1>
+                <span class="version-tag">Pro v1.2</span>
+            </div>
+            <p class="subtitle">Analyse prédictive DPE & Transition énergétique par Régression Logistique Multinomiale</p>
+            
+            <!-- Navigation Tabs -->
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="tab-btn-single">
+                    <i class="fa-solid fa-house-laptop"></i> Calculateur Individuel
+                </button>
+                <button class="tab-btn" id="tab-btn-portfolio">
+                    <i class="fa-solid fa-city"></i> Portefeuille Industriel (CSV)
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Single Building Calculator -->
+        <div class="tab-content active" id="tab-single">
+            <div class="dashboard-grid">
+                <!-- Left Column: Inputs Form -->
+                <section class="card glass-card form-section">
+                    <h2><i class="fa-solid fa-sliders-up header-icon"></i> Caractéristiques du Bâtiment</h2>
+                    
+                    <form id="predictor-form" onsubmit="event.preventDefault();">
+                        <!-- Surface -->
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="input-surface">Surface Habitable (m²)</label>
+                                <span class="value-display" id="val-surface">80 m²</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <i class="fa-solid fa-maximize slider-icon"></i>
+                                <input type="range" id="input-surface" min="20" max="300" step="1" value="80" class="custom-slider">
+                            </div>
+                        </div>
+
+                        <!-- Pieces -->
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="input-pieces">Nombre de Pièces</label>
+                                <span class="value-display" id="val-pieces">4</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <i class="fa-solid fa-door-open slider-icon"></i>
+                                <input type="range" id="input-pieces" min="1" max="10" step="1" value="4" class="custom-slider">
+                            </div>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="input-age">Âge du Bâtiment (années)</label>
+                                <span class="value-display" id="val-age">30 ans</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <i class="fa-solid fa-hourglass-half slider-icon"></i>
+                                <input type="range" id="input-age" min="0" max="150" step="1" value="30" class="custom-slider">
+                            </div>
+                        </div>
+
+                        <!-- Occupants -->
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="input-occupants">Nombre d'Occupants</label>
+                                <span class="value-display" id="val-occupants">3</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <i class="fa-solid fa-users slider-icon"></i>
+                                <input type="range" id="input-occupants" min="1" max="8" step="1" value="3" class="custom-slider">
+                            </div>
+                        </div>
+
+                        <!-- Consommation -->
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="input-consumption">Consommation Annuelle d'Énergie</label>
+                                <span class="value-display highlight-value" id="val-consumption">12 500 kWh</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <i class="fa-solid fa-bolt-lightning slider-icon"></i>
+                                <input type="range" id="input-consumption" min="300" max="50000" step="100" value="12500" class="custom-slider">
+                            </div>
+                            <div class="specific-cons-badge" id="specific-cons-display">
+                                <span>Consommation spécifique: <strong>156.3 kWh/m²/an</strong></span>
+                                <div class="threshold-ruler" id="threshold-ruler">
+                                    <div class="threshold-segment" style="background:var(--dpe-a);flex:70"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-b);flex:40"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-c);flex:70"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-d);flex:70"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-e);flex:80"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-f);flex:90"></div>
+                                    <div class="threshold-segment" style="background:var(--dpe-g);flex:80"></div>
+                                    <div class="threshold-indicator" id="threshold-indicator" style="left:0%"></div>
+                                </div>
+                                <span class="threshold-label">Seuils DPE : A≤70 | B≤110 | C≤180 | D≤250 | E≤330 | F≤420 | G&gt;420 kWh/m²/an</span>
+                            </div>
+                        </div>
+
+                        <!-- Categorical Inputs Row -->
+                        <div class="grid-2-col">
+                            <!-- Type de chauffage -->
+                            <div class="form-group">
+                                <label for="input-heating"><i class="fa-solid fa-fire"></i> Chauffage</label>
+                                <select id="input-heating" class="custom-select">
+                                    <option value="Electrique">Électrique</option>
+                                    <option value="Gaz" selected>Gaz naturel</option>
+                                    <option value="Fioul">Fioul (Masoût)</option>
+                                    <option value="Bois">Bois de chauffage</option>
+                                    <option value="Pompe_a_chaleur">Pompe à chaleur</option>
+                                </select>
+                            </div>
+
+                            <!-- Isolation thermique -->
+                            <div class="form-group">
+                                <label for="input-insulation"><i class="fa-solid fa-temperature-arrow-down"></i> Isolation</label>
+                                <select id="input-insulation" class="custom-select">
+                                    <option value="Mauvaise">Mauvaise</option>
+                                    <option value="Moyenne" selected>Moyenne</option>
+                                    <option value="Bonne">Bonne</option>
+                                    <option value="Excellente">Excellente</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Right Column: Predictions & Visualizations -->
+                <div class="results-column">
+                    <!-- Result Badge Card -->
+                    <section class="card glass-card result-card" id="main-result-card">
+                        <h2><i class="fa-solid fa-chart-line header-icon"></i> Classe Énergétique Prédite</h2>
+                        <div class="result-container">
+                            <div class="dpe-badge-display">
+                                <div class="dpe-letter" id="predicted-letter">-</div>
+                                <div class="dpe-label">DPE</div>
+                            </div>
+                            
+                            <div class="prediction-info">
+                                <h3 id="class-title">Classe -</h3>
+                                <p id="class-description">Ajustez les curseurs pour voir la prédiction en temps réel.</p>
+                                <div class="probability-score">
+                                    Confiance : <strong id="prediction-confidence">0.0%</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Energy Scale Visualization -->
+                        <div class="dpe-scale-bar" id="dpe-scale-bar">
+                            <div class="dpe-scale-node dpe-a" data-class="A">≤ 70</div>
+                            <div class="dpe-scale-node dpe-b" data-class="B">≤ 110</div>
+                            <div class="dpe-scale-node dpe-c" data-class="C">≤ 180</div>
+                            <div class="dpe-scale-node dpe-d" data-class="D">≤ 250</div>
+                            <div class="dpe-scale-node dpe-e" data-class="E">≤ 330</div>
+                            <div class="dpe-scale-node dpe-f" data-class="F">≤ 420</div>
+                            <div class="dpe-scale-node dpe-g" data-class="G">&gt; 420</div>
+                        </div>
+                        
+                        <button type="button" class="btn-print-report" id="btn-print-report" onclick="generateBuildingReport()">
+                            <i class="fa-solid fa-file-pdf"></i> Générer un Rapport Individuel (Impression)
+                        </button>
+                    </section>
+
+                    <!-- Probabilities Chart -->
+                    <section class="card glass-card chart-card">
+                        <h2><i class="fa-solid fa-chart-simple header-icon"></i> Distribution des Probabilités</h2>
+                        <div class="chart-container">
+                            <canvas id="probabilities-chart"></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Eco-Renovation Simulator -->
+                    <section class="card glass-card renovation-card">
+                        <div class="renovation-header">
+                            <h2><i class="fa-solid fa-leaf header-icon"></i> Simulateur d'Éco-Rénovation</h2>
+                            <span class="eco-badge">Individuel</span>
+                        </div>
+                        <p class="section-desc">Simulez instantanément l'impact de travaux d'isolation performants et l'installation d'une pompe à chaleur sur l'étiquette DPE du bâtiment.</p>
+                        
+                        <div class="renovation-actions">
+                            <button type="button" class="btn-renovate" id="btn-renovate-isolation">
+                                <i class="fa-solid fa-house-chimney-medical"></i> Améliorer l'isolation (Excellente)
+                            </button>
+                            <button type="button" class="btn-renovate" id="btn-renovate-heating">
+                                <i class="fa-solid fa-heat-pump"></i> Installer une Pompe à chaleur (PAC)
+                            </button>
+                            <button type="button" class="btn-reset" id="btn-reset-renovation">
+                                <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+                            </button>
+                        </div>
+                        
+                        <div class="renovation-comparison" id="renov-comparison-container" style="display: none;">
+                            <div class="compare-arrow"><i class="fa-solid fa-right-long"></i></div>
+                            <div class="compare-box original">
+                                <div class="compare-label">Actuel</div>
+                                <div class="mini-dpe-badge" id="original-dpe">-</div>
+                            </div>
+                            <div class="compare-box renovated">
+                                <div class="compare-label">Après travaux</div>
+                                <div class="mini-dpe-badge" id="renovated-dpe">-</div>
+                            </div>
+                            <div class="compare-text" id="renovation-savings-text">
+                                Gain potentiel : - kWh/an
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Portfolio Analysis -->
+        <div class="tab-content" id="tab-portfolio" style="display: none;">
+            <div class="portfolio-grid">
+                <!-- Dropzone Section -->
+                <section class="card glass-card dropzone-section">
+                    <h2><i class="fa-solid fa-file-import header-icon"></i> Importer des données réelles</h2>
+                    <p class="section-desc">Téléversez un fichier CSV contenant la liste des bâtiments à auditer. Vous pouvez utiliser notre gabarit pour structurer vos données.</p>
+                    
+                    <div class="dropzone" id="csv-dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <h3>Glissez et déposez votre fichier CSV ici</h3>
+                        <p>ou</p>
+                        <label for="csv-file-input" class="btn-upload-label">Rechercher sur l'ordinateur</label>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                        
+                        <div class="template-download-wrapper">
+                            <a href="gabarit_import_dpe.csv" download class="link-download-template" id="download-template-link">
+                                <i class="fa-solid fa-file-arrow-down"></i> Télécharger le modèle CSV (.csv)
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div id="import-error-message" class="import-error-box" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="error-text">Format de fichier non supporté.</span>
+                    </div>
+                </section>
+
+                <!-- Portfolio Performance View (Dynamic) -->
+                <div class="portfolio-dashboard" id="portfolio-dashboard-view" style="display: none;">
+                    <!-- KPI Cards Row -->
+                    <div class="kpi-row">
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon-wrapper"><i class="fa-solid fa-building"></i></div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Bâtiments Analysés</div>
+                                <div class="kpi-value" id="kpi-total-buildings">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card glass-card">
+                            <div class="kpi-icon-wrapper"><i class="fa-solid fa-charging-station"></i></div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Consommation Moyenne</div>
+                                <div class="kpi-value" id="kpi-avg-cons">0 kWh/m²/an</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card glass-card highlighted-kpi">
+                            <div class="kpi-icon-wrapper"><i class="fa-solid fa-piggy-bank"></i></div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Économies Potentielles</div>
+                                <div class="kpi-value" id="kpi-total-savings">0 kWh/an</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart & Simulator Row -->
+                    <div class="portfolio-analytics-row">
+                        <!-- Chart Card -->
+                        <div class="card glass-card portfolio-chart-card">
+                            <h3><i class="fa-solid fa-chart-pie header-icon"></i> Répartition DPE du Parc</h3>
+                            <div class="portfolio-chart-container">
+                                <canvas id="portfolio-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Simulator Card -->
+                        <div class="card glass-card portfolio-simulator-card">
+                            <div class="renovation-header">
+                                <h3><i class="fa-solid fa-industry header-icon"></i> Transition Énergétique Globale</h3>
+                                <span class="eco-badge">Échelle du Parc</span>
+                            </div>
+                            <p class="section-desc">Simulez une campagne de travaux d'efficacité énergétique sur l'ensemble de vos bâtiments et évaluez instantanément les gains thermiques, budgétaires et CO₂.</p>
+                            
+                            <div class="batch-buttons">
+                                <button type="button" class="btn-renovate" id="batch-isolation-btn">
+                                    <i class="fa-solid fa-house-chimney-medical"></i> Rénover l'isolation (Excellente)
+                                </button>
+                                <button type="button" class="btn-renovate" id="batch-heating-btn">
+                                    <i class="fa-solid fa-heat-pump"></i> Installer des PAC
+                                </button>
+                                <button type="button" class="btn-reset" id="batch-reset-btn">
+                                    <i class="fa-solid fa-rotate-left"></i> Réinitialiser le parc
+                                </button>
+                            </div>
+
+                            <!-- Portfolio Savings Summary Box -->
+                            <div class="batch-savings-summary" id="batch-savings-box" style="display: none;">
+                                <h4>Bilan Financier & Environnemental Estimé :</h4>
+                                <div class="savings-metric-value" id="batch-savings-kwh">0 kWh / an</div>
+                                <div class="savings-sub-detail" id="batch-savings-euros">soit env. <strong>0 € / an</strong> d'économies cumulées</div>
+                                <div class="savings-sub-detail" id="batch-savings-co2"><i class="fa-solid fa-cloud-arrow-down"></i> Réduction CO₂ : <strong>0.0 tonnes / an</strong></div>
+                            </div>
+                            
+                            <div class="export-container">
+                                <button type="button" class="btn-export" id="batch-export-btn">
+                                    <i class="fa-solid fa-file-csv"></i> Exporter le rapport DPE (.csv)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Table Card -->
+                    <div class="card glass-card portfolio-table-card">
+                        <div class="table-header">
+                            <h3><i class="fa-solid fa-list-check header-icon"></i> Liste détaillée et prédictions</h3>
+                            <div class="search-box-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="table-search" placeholder="Filtrer par DPE, chauffage...">
+                            </div>
+                        </div>
+                        <div class="table-scroll-wrapper">
+                            <table class="portfolio-table" id="portfolio-buildings-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Surface</th>
+                                        <th>Pièces</th>
+                                        <th>Âge</th>
+                                        <th>Chauffage</th>
+                                        <th>Isolation</th>
+                                        <th>Cons. Annuelle</th>
+                                        <th>Spécifique</th>
+                                        <th>DPE Prédit</th>
+                                        <th>Confiance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portfolio-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Methodology and Math Section -->
+        <section class="card glass-card methodology-section">
+            <h2><i class="fa-solid fa-book-open header-icon"></i> Fondements Mathématiques & Méthodologie</h2>
+            
+            <div class="methodology-grid">
+                <div>
+                    <h3>Le modèle : Régression Logistique Multinomiale</h3>
+                    <p>La régression logistique multinomiale est une extension de la régression logistique binaire pour les variables cibles ayant plusieurs catégories ordonnées ou non (dans notre cas, les 7 classes énergétiques de A à G).</p>
+                    
+                    <p>Pour une observation donnée sous forme de vecteur de caractéristiques <span class="math-inline">\(X\)</span>, la probabilité d'appartenir à la classe <span class="math-inline">\(k\)</span> est modélisée par la fonction <strong>Softmax</strong> :</p>
+                    
+                    <div class="math-block" id="formula-softmax">
+                        <!-- LaTeX equation will be rendered here by KaTeX -->
+                        $$P(Y = k | X) = \frac{e^{\beta_{0, k} + \sum_{j=1}^{M} \beta_{j, k} X_j}}{\sum_{l=1}^{K} e^{\beta_{0, l} + \sum_{j=1}^{M} \beta_{j, l} X_j}}$$
+                    </div>
+                    
+                    <p>Où :</p>
+                    <ul>
+                        <li><span class="math-inline">\(K = 7\)</span> représente le nombre de classes énergétiques (A à G).</li>
+                        <li><span class="math-inline">\(M = 14\)</span> est le nombre de variables après prétraitement.</li>
+                        <li><span class="math-inline">\(\beta_{j, k}\)</span> sont les coefficients associés à la variable <span class="math-inline">\(X_j\)</span> pour la classe <span class="math-inline">\(k\)</span>.</li>
+                        <li><span class="math-inline">\(\beta_{0, k}\)</span> est l'ordonnée à l'origine (intercept) de la classe <span class="math-inline">\(k\)</span>.</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Prétraitement & Pipeline</h3>
+                    <p>Pour appliquer ce modèle linéaire, nos données subissent les transformations suivantes :</p>
+                    <ol>
+                        <li><strong>Encodage (One-Hot)</strong> : Les variables catégorielles (Type de chauffage et Isolation) sont converties en variables binaires (0 ou 1) pour chaque catégorie.</li>
+                        <li><strong>Normalisation (Standardisation)</strong> : Chaque variable <span class="math-inline">\(x_j\)</span> est centrée et réduite sur la base des données d'entraînement :
+                            <div class="math-block">$$X_j = \frac{x_j - \mu_j}{\sigma_j}$$</div>
+                            Où <span class="math-inline">\(\mu_j\)</span> et <span class="math-inline">\(\sigma_j\)</span> sont la moyenne et l'écart-type de la variable <span class="math-inline">\(j\)</span>.
+                        </li>
+                    </ol>
+                    <div class="model-accuracy-badge">
+                        <i class="fa-solid fa-circle-check"></i> Précision globale du modèle entraîné (Accuracy) : <strong id="model-accuracy-val">--%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Performance Metrics & Visualizations -->
+            <div class="metrics-visualizations">
+                <h3>Visualisation de la Performance</h3>
+                <p class="section-desc">Ces figures montrent la qualité des prédictions obtenues lors de l'entraînement et de la validation du modèle.</p>
+                
+                <div class="visuals-row">
+                    <div class="visual-container">
+                        <h4>Matrice de Confusion</h4>
+                        <img src="assets/confusion_matrix.png" alt="Matrice de confusion du modèle" class="performance-img">
+                        <p class="visual-caption">La diagonale montre les prédictions correctes. La proximité des classes DPE (ex: prédire B au lieu de A) rend les erreurs mineures acceptables.</p>
+                    </div>
+                    <div class="visual-container">
+                        <h4>Coefficients des Variables</h4>
+                        <img src="assets/coefficients.png" alt="Coefficients des coefficients de régression" class="performance-img">
+                        <p class="visual-caption">Coefficients $\beta$ par classe énergétique. On voit que la consommation élevée pousse vers les classes F et G, alors que la pompe à chaleur et l'excellente isolation tirent vers les classes A et B.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>© 2026 - Plateforme Industrielle DPE Predictor. Conçu pour la transition énergétique des parcs immobiliers.</p>
+    </footer>
+
+    <!-- Load scripts -->
+    <script src="model_coefficients.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

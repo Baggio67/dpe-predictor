@@ -1,0 +1,26 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local logs and outputs
+*.log
+test_output*.pdf
+
+# Large datasets (we keep the serialized models .pkl for deployment)
+data/building_energy_data.csv
+
+# IDE and system files
+.vscode/
+.idea/
+.gemini/
+.DS_Store
+Thumbs.db
