@@ -8,6 +8,9 @@ let renovationState = {
     heating: false
 };
 
+// Supabase client instance
+let supabaseClient = null;
+
 // Portfolio state variables
 let importedBuildings = [];
 let batchRenovationState = {
@@ -63,7 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. Setup Portfolio Module (CSV)
     setupPortfolioModule();
 
-    // 8. Run Initial Single Prediction
+    // 8. Setup Supabase database logging
+    initSupabase();
+    setupSupabaseUI();
+
+    // 9. Run Initial Single Prediction
     updateSinglePrediction();
 });
 
@@ -439,6 +446,11 @@ function updateSinglePrediction() {
     if (probChart) {
         probChart.data.datasets[0].data = activePred.probabilities;
         probChart.update();
+    }
+
+    // Supabase Logging
+    if (supabaseClient) {
+        logAuditToSupabaseDebounced(surface, pieces, age, occupants, consumption, heating, insulation, activePred.predictedClass, activePred.confidence);
     }
 }
 
@@ -927,4 +939,168 @@ function exportPredictedPortfolioCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// -------------------------------------------------------------
+// SUPABASE INTEGRATION & LOGGING
+// -------------------------------------------------------------
+
+// Debounce timeout for database writes
+let logDebounceTimeout = null;
+
+// Initialize Supabase Client from localStorage
+function initSupabase() {
+    const url = localStorage.getItem('supabase_url');
+    const key = localStorage.getItem('supabase_key');
+    const statusEl = document.getElementById('supabase-status');
+
+    if (url && key) {
+        try {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(url, key);
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connecté à Supabase`;
+                statusEl.className = "connection-status status-success";
+            } else {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> SDK Supabase non chargé`;
+                statusEl.className = "connection-status status-error";
+            }
+        } catch (err) {
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Erreur d'initialisation`;
+            statusEl.className = "connection-status status-error";
+            console.error(err);
+        }
+    } else {
+        supabaseClient = null;
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-question"></i> Non configuré`;
+        statusEl.className = "connection-status status-unconfigured";
+    }
+}
+
+// Bind modal open/close and submit events
+function setupSupabaseUI() {
+    const modal = document.getElementById('config-modal');
+    const btnOpen = document.getElementById('btn-open-config');
+    const btnClose = document.getElementById('btn-close-config');
+    const btnSave = document.getElementById('btn-save-config');
+    const btnClear = document.getElementById('btn-clear-config');
+    
+    const inputUrl = document.getElementById('sup-url');
+    const inputKey = document.getElementById('sup-key');
+
+    // Prepopulate inputs from localStorage
+    if (inputUrl && inputKey) {
+        inputUrl.value = localStorage.getItem('supabase_url') || '';
+        inputKey.value = localStorage.getItem('supabase_key') || '';
+    }
+
+    if (btnOpen) {
+        btnOpen.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+    }
+
+    if (btnClose) {
+        btnClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+
+    // Close when clicking outside the card
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    if (btnSave) {
+        btnSave.addEventListener('click', () => {
+            const url = inputUrl.value.trim();
+            const key = inputKey.value.trim();
+
+            if (!url || !key) {
+                alert("Veuillez renseigner l'URL et la clé API.");
+                return;
+            }
+
+            localStorage.setItem('supabase_url', url);
+            localStorage.setItem('supabase_key', key);
+            
+            initSupabase();
+            modal.style.display = 'none';
+        });
+    }
+
+    if (btnClear) {
+        btnClear.addEventListener('click', () => {
+            localStorage.removeItem('supabase_url');
+            localStorage.removeItem('supabase_key');
+            inputUrl.value = '';
+            inputKey.value = '';
+            
+            initSupabase();
+            modal.style.display = 'none';
+        });
+    }
+}
+
+// Debounced wrapper to avoid database spamming on slider movements
+function logAuditToSupabaseDebounced(surface, pieces, age, occupants, consumption, heating, insulation, predictedClass, confidence) {
+    if (logDebounceTimeout) clearTimeout(logDebounceTimeout);
+    logDebounceTimeout = setTimeout(() => {
+        logAuditToSupabase(surface, pieces, age, occupants, consumption, heating, insulation, predictedClass, confidence);
+    }, 1500); // Wait 1.5 seconds after final slider movement
+}
+
+// Send diagnostic log entry to Supabase
+async function logAuditToSupabase(surface, pieces, age, occupants, consumption, heating, insulation, predictedClass, confidence) {
+    if (!supabaseClient) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('audit_history')
+            .insert([
+                {
+                    surface: surface,
+                    pieces: pieces,
+                    age: age,
+                    occupants: occupants,
+                    annual_consumption: consumption,
+                    heating_type: heating,
+                    insulation: insulation,
+                    predicted_class: predictedClass,
+                    confidence: confidence
+                }
+            ]);
+            
+        if (error) {
+            console.warn("Erreur d'écriture Supabase :", error.message);
+            const statusEl = document.getElementById('supabase-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Échec de l'enregistrement`;
+                statusEl.className = "connection-status status-error";
+            }
+        } else {
+            console.log("Diagnostic enregistré avec succès dans Supabase.");
+            const statusEl = document.getElementById('supabase-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connecté & Audit Enregistré`;
+                statusEl.className = "connection-status status-success";
+            }
+            
+            // Revert back status text after 3 seconds
+            setTimeout(() => {
+                if (supabaseClient) {
+                    const statusEl = document.getElementById('supabase-status');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connecté à Supabase`;
+                        statusEl.className = "connection-status status-success";
+                    }
+                }
+            }, 3000);
+        }
+    } catch (err) {
+        console.error("Exception lors de l'appel Supabase :", err);
+    }
 }

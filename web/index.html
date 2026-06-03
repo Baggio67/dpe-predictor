@@ -38,6 +38,9 @@
                 <i class="fa-solid fa-leaf logo-icon"></i>
                 <h1>DPE<span>Predictor</span></h1>
                 <span class="version-tag">Pro v1.2</span>
+                <button id="btn-open-config" class="btn-config-icon" title="Configurer la base de données Supabase">
+                    <i class="fa-solid fa-database"></i> Supabase
+                </button>
             </div>
             <p class="subtitle">Analyse prédictive DPE & Transition énergétique par Régression Logistique Multinomiale</p>
             
@@ -446,6 +449,36 @@
         <p>© 2026 - Plateforme Industrielle DPE Predictor. Conçu pour la transition énergétique des parcs immobiliers.</p>
     </footer>
 
+    <!-- Supabase Configuration Modal -->
+    <div class="modal-overlay" id="config-modal" style="display: none;">
+        <div class="card glass-card modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-database"></i> Configuration Supabase</h3>
+                <button class="btn-close-modal" id="btn-close-config"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="section-desc">Entrez vos identifiants de projet Supabase pour enregistrer automatiquement l'historique des prédictions (audits) en base de données.</p>
+            <form id="supabase-config-form" onsubmit="event.preventDefault();">
+                <div class="form-group">
+                    <label for="sup-url">URL du Projet Supabase</label>
+                    <input type="text" id="sup-url" class="custom-input-text" placeholder="https://xxxx.supabase.co">
+                </div>
+                <div class="form-group">
+                    <label for="sup-key">Clé Anon API (Publique)</label>
+                    <input type="password" id="sup-key" class="custom-input-text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-save" id="btn-save-config">Enregistrer</button>
+                    <button type="button" class="btn-clear" id="btn-clear-config">Effacer</button>
+                </div>
+            </form>
+            <div class="connection-status" id="supabase-status">
+                <i class="fa-solid fa-circle-question"></i> Non configuré
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Load scripts -->
     <script src="model_coefficients.js"></script>
     <script src="app.js"></script>
