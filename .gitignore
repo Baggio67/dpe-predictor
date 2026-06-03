@@ -24,3 +24,7 @@ data/building_energy_data.csv
 .gemini/
 .DS_Store
 Thumbs.db
+
+# Netlify files and CLI node_modules
+.netlify/
+

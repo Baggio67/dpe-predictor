@@ -118,9 +118,9 @@ def train_and_export():
     # 7. Export model and scaler using pickle for Python backend API
     import pickle
     with open('data/model.pkl', 'wb') as f:
-        pickle.dump(model, f)
+        pickle.dump(model, f, protocol=4)
     with open('data/scaler.pkl', 'wb') as f:
-        pickle.dump(scaler, f)
+        pickle.dump(scaler, f, protocol=4)
     print("Modèle sérialisé sauvegardé dans 'data/model.pkl'")
     print("Scaler sérialisé sauvegardé dans 'data/scaler.pkl'")
 
