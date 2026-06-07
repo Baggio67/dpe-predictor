@@ -36,10 +36,10 @@
         <header>
             <div class="logo">
                 <i class="fa-solid fa-leaf logo-icon"></i>
-                <h1>DPE<span>Predictor</span></h1>
+                <h1>DPE<span>clasification</span></h1>
                 <span class="version-tag">Pro v1.2</span>
                 <button id="btn-open-config" class="btn-config-icon" title="Configurer la base de données Supabase">
-                    <i class="fa-solid fa-database"></i> Supabase
+                    <i class="fa-solid fa-database"></i> base de donné
                 </button>
             </div>
             <p class="subtitle">Analyse prédictive DPE & Transition énergétique par Régression Logistique Multinomiale</p>
@@ -382,71 +382,10 @@
                 </div>
             </div>
         </div>
-
-        <!-- Methodology and Math Section -->
-        <section class="card glass-card methodology-section">
-            <h2><i class="fa-solid fa-book-open header-icon"></i> Fondements Mathématiques & Méthodologie</h2>
-            
-            <div class="methodology-grid">
-                <div>
-                    <h3>Le modèle : Régression Logistique Multinomiale</h3>
-                    <p>La régression logistique multinomiale est une extension de la régression logistique binaire pour les variables cibles ayant plusieurs catégories ordonnées ou non (dans notre cas, les 7 classes énergétiques de A à G).</p>
-                    
-                    <p>Pour une observation donnée sous forme de vecteur de caractéristiques <span class="math-inline">\(X\)</span>, la probabilité d'appartenir à la classe <span class="math-inline">\(k\)</span> est modélisée par la fonction <strong>Softmax</strong> :</p>
-                    
-                    <div class="math-block" id="formula-softmax">
-                        <!-- LaTeX equation will be rendered here by KaTeX -->
-                        $$P(Y = k | X) = \frac{e^{\beta_{0, k} + \sum_{j=1}^{M} \beta_{j, k} X_j}}{\sum_{l=1}^{K} e^{\beta_{0, l} + \sum_{j=1}^{M} \beta_{j, l} X_j}}$$
-                    </div>
-                    
-                    <p>Où :</p>
-                    <ul>
-                        <li><span class="math-inline">\(K = 7\)</span> représente le nombre de classes énergétiques (A à G).</li>
-                        <li><span class="math-inline">\(M = 14\)</span> est le nombre de variables après prétraitement.</li>
-                        <li><span class="math-inline">\(\beta_{j, k}\)</span> sont les coefficients associés à la variable <span class="math-inline">\(X_j\)</span> pour la classe <span class="math-inline">\(k\)</span>.</li>
-                        <li><span class="math-inline">\(\beta_{0, k}\)</span> est l'ordonnée à l'origine (intercept) de la classe <span class="math-inline">\(k\)</span>.</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3>Prétraitement & Pipeline</h3>
-                    <p>Pour appliquer ce modèle linéaire, nos données subissent les transformations suivantes :</p>
-                    <ol>
-                        <li><strong>Encodage (One-Hot)</strong> : Les variables catégorielles (Type de chauffage et Isolation) sont converties en variables binaires (0 ou 1) pour chaque catégorie.</li>
-                        <li><strong>Normalisation (Standardisation)</strong> : Chaque variable <span class="math-inline">\(x_j\)</span> est centrée et réduite sur la base des données d'entraînement :
-                            <div class="math-block">$$X_j = \frac{x_j - \mu_j}{\sigma_j}$$</div>
-                            Où <span class="math-inline">\(\mu_j\)</span> et <span class="math-inline">\(\sigma_j\)</span> sont la moyenne et l'écart-type de la variable <span class="math-inline">\(j\)</span>.
-                        </li>
-                    </ol>
-                    <div class="model-accuracy-badge">
-                        <i class="fa-solid fa-circle-check"></i> Précision globale du modèle entraîné (Accuracy) : <strong id="model-accuracy-val">--%</strong>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Model Performance Metrics & Visualizations -->
-            <div class="metrics-visualizations">
-                <h3>Visualisation de la Performance</h3>
-                <p class="section-desc">Ces figures montrent la qualité des prédictions obtenues lors de l'entraînement et de la validation du modèle.</p>
-                
-                <div class="visuals-row">
-                    <div class="visual-container">
-                        <h4>Matrice de Confusion</h4>
-                        <img src="assets/confusion_matrix.png" alt="Matrice de confusion du modèle" class="performance-img">
-                        <p class="visual-caption">La diagonale montre les prédictions correctes. La proximité des classes DPE (ex: prédire B au lieu de A) rend les erreurs mineures acceptables.</p>
-                    </div>
-                    <div class="visual-container">
-                        <h4>Coefficients des Variables</h4>
-                        <img src="assets/coefficients.png" alt="Coefficients des coefficients de régression" class="performance-img">
-                        <p class="visual-caption">Coefficients $\beta$ par classe énergétique. On voit que la consommation élevée pousse vers les classes F et G, alors que la pompe à chaleur et l'excellente isolation tirent vers les classes A et B.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
     </div>
     
     <footer>
-        <p>© 2026 - Plateforme Industrielle DPE Predictor. Conçu pour la transition énergétique des parcs immobiliers.</p>
+        <p>© 2026 - Plateforme Industrielle DPE. Conçu pour la transition énergétique des parcs immobiliers.</p>
     </footer>
 
     <!-- Supabase Configuration Modal -->
